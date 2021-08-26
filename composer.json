@@ -1,0 +1,32 @@
+{
+    "name": "sparrow-team/laravel-setting-module",
+    "description": "Customizable setting module for laravel framework developed by sparrow team",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Sparrow team",
+            "email": "kpouriya6@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Sparrow\\Setting\\": "src/"
+        }
+    },
+    "require": {
+        "illuminate/support": "*",
+        "illuminate/routing": "*",
+        "illuminate/contracts": "*",
+        "php": "^8.0",
+        "predis/predis": "*"
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [],
+            "providers": [
+                "Sparrow\\Setting\\Providers\\SettingServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev"
+}
