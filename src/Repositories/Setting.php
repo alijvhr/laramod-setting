@@ -29,7 +29,7 @@ class Setting
 
     public static function get(string $key): mixed
     {
-        if (!Cache::offsetExists($key) || $key == 'all_keys') return null;
+        if (!Cache::offsetExists($key)) return null;
         if (!Redis::exists($key)) Redis::set($key, Cache::get($key), now()->diffInSeconds(now()->addMinutes(self::$expirationMinutes)));
 
         return Redis::get($key);
