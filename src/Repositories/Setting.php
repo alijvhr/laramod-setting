@@ -38,4 +38,9 @@ class Setting
 
         return Redis::get($key);
     }
+
+    public static function exists(string $key): bool
+    {
+        return Cache::offsetExists($key);
+    }
 }
