@@ -28,9 +28,9 @@ class Setting
         Redis::del($key);
     }
 
-    public static function get(string $key): mixed
+    public static function get(string $key, $default = null): mixed
     {
-        if (!Cache::offsetExists($key)) return null;
+        if (!Cache::offsetExists($key)) return $default;
         if (!Redis::exists($key)) {
             Redis::set($key, Cache::get($key));
             Redis::expire($key, now()->diffInSeconds(now()->addMinutes(self::$expirationMinutes)));
