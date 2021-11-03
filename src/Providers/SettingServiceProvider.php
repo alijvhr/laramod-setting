@@ -3,6 +3,7 @@
 namespace Sparrow\Setting\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Sparrow\Setting\Models\Setting;
 
 class SettingServiceProvider extends ServiceProvider
 {
@@ -14,5 +15,9 @@ class SettingServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/sparrow/support')
         ]);
+        $settings = Setting::all();
+        $table    = Setting::getSwooleTable();
+        foreach ($settings as $item)
+            $table->set($item->key, $item->value);
     }
 }

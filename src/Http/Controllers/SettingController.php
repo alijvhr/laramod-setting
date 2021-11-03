@@ -8,7 +8,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use JetBrains\PhpStorm\ArrayShape;
-use Sparrow\Setting\Repositories\Setting;
+use Sparrow\Setting\Models\Setting;
 
 class SettingController extends Controller
 {
