@@ -22,5 +22,6 @@ class SettingServiceProvider extends ServiceProvider
             foreach ($settings as $item)
                 $table->set($item->key, $item->value);
         }
+        require __DIR__ . '/../helpers.php';
     }
 }
