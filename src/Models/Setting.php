@@ -3,15 +3,16 @@
 namespace Sparrow\Setting\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Redis;
 use Swoole\Table;
 use SwooleTW\Http\Table\Facades\SwooleTable;
 
 class Setting extends Model
 {
-    protected $guarded      = [];
-    protected $primaryKey   = 'key';
-    public    $incrementing = false;
-    public    $timestamps   = false;
+    protected            $guarded      = [];
+    protected            $primaryKey   = 'key';
+    public               $incrementing = false;
+    public               $timestamps   = false;
     private static Table $swooleTable;
 
     public static function getSwooleTable(): Table
@@ -19,6 +20,10 @@ class Setting extends Model
         if (isset(self::$swooleTable)) return self::$swooleTable;
         self::$swooleTable = SwooleTable::get('settings');
         return self::$swooleTable;
+    }
+
+    public static function getDriver() {
+        return env('SETTING_DRIVER', 'db');
     }
 
     public static function set(string $key, $value = null): void
@@ -30,23 +35,47 @@ class Setting extends Model
             'key'   => $key,
             'value' => $value
         ]);
+        if (self::getDriver() == 'redis') {
+            Redis::set($key, $value);
+            Redis::expire($key, now()->diffInSeconds(now()->addMinutes(env('SETTING_TTL', 1))));
+        }
         self::getSwooleTable()->set($key, $value);
     }
 
     public static function get(string $key)
     {
-        if (!self::getSwooleTable()->exists($key)) return null;
-        return self::getSwooleTable()->get($key);
+        switch (self::getDriver()) {
+            case 'swoole':
+                if (!self::getSwooleTable()->exists($key)) return null;
+                return self::getSwooleTable()->get($key);
+            case 'redis':
+                if (Redis::exists($key))
+                    return Redis::get($key);
+                if (($setting = self::where('key', $key)->first())) {
+                    self::set($key, $setting->value);
+                    return Redis::get($key);
+                }
+                return null;
+            case 'db':
+                $setting = self::where('key', $key)->first();
+                if (!$setting)
+                    return null;
+                return $setting->value;
+        }
     }
 
     public static function remove(string $key): void
     {
         self::where('key', $key)->delete();
-        self::getSwooleTable()->del($key);
+        $driver = self::getDriver();
+        if ($driver == 'swoole')
+            self::getSwooleTable()->del($key);
+        elseif ($driver == 'redis')
+            Redis::del($key);
     }
 
     public static function exists(string $key): bool
     {
-        return self::getSwooleTable()->exists($key);
+        return (bool)self::where('key', $key)->count();
     }
 }
