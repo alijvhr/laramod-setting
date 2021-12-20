@@ -16,10 +16,6 @@ class SettingServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/sparrow/support')
         ]);
-    }
-
-    public function register(): void
-    {
         if (Schema::hasTable('settings')) {
             $settings = Setting::all();
             $table    = Setting::getSwooleTable();
