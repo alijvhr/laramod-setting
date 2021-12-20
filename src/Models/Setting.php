@@ -26,8 +26,19 @@ class Setting extends Model
         return env('SETTING_DRIVER', 'db');
     }
 
+    private static function init(): void
+    {
+        if (empty(self::$swooleTable)) {
+            $settings = Setting::all();
+            $table    = Setting::getSwooleTable();
+            foreach ($settings as $item)
+                $table->set($item->key, $item->value);
+        }
+    }
+
     public static function set(string $key, $value = null): void
     {
+        self::init();
         $setting = self::where('key', $key)->count();
         if ($setting) return;
         if (is_array($value)) $value = json_encode($value);
@@ -46,6 +57,7 @@ class Setting extends Model
     {
         switch (self::getDriver()) {
             case 'swoole':
+                self::init();
                 if (!self::getSwooleTable()->exists($key)) return null;
                 return self::getSwooleTable()->get($key);
             case 'redis':
@@ -68,10 +80,13 @@ class Setting extends Model
     {
         self::where('key', $key)->delete();
         $driver = self::getDriver();
-        if ($driver == 'swoole')
+        if ($driver == 'swoole') {
+            self::init();
             self::getSwooleTable()->del($key);
-        elseif ($driver == 'redis')
+        }
+        elseif ($driver == 'redis') {
             Redis::del($key);
+        }
     }
 
     public static function exists(string $key): bool
