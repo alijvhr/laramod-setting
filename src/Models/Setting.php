@@ -32,8 +32,21 @@ class Setting extends Model
             $settings = Setting::all();
             $table    = Setting::getSwooleTable();
             foreach ($settings as $item)
-                $table->set($item->key, $item->value);
+                $table->set($item->key, ['value' => $item->value]);
         }
+    }
+
+    public static function createRoom(array $data): array
+    {
+        $rows = self::getSwooleTable();
+        $index = 1;
+        foreach ($rows as $key => $item) {
+            $id = explode('_', $key)[1];
+            if ($id > $index)
+                $index = $id;
+        }
+        $table = SwooleTable::get('rooms');
+        $table->set('room_' . $index, ['value' => $data]);
     }
 
     public static function set(string $key, $value = null): void
@@ -49,6 +62,8 @@ class Setting extends Model
         if (self::getDriver() == 'redis') {
             Redis::set($key, $value);
             Redis::expire($key, now()->diffInSeconds(now()->addMinutes(env('SETTING_TTL', 1))));
+        } elseif (self::getDriver() == 'swoole') {
+            self::getSwooleTable()->set($key, ['key' => $key, 'value' => $value]);
         }
         self::getSwooleTable()->set($key, $value);
     }
