@@ -112,6 +112,7 @@ class Setting extends Model
 
     public static function incr(string $key): int
     {
+        self::init();
         $value = self::getSwooleTable()->incr($key, 'counter');
         self::where('key', $key)->update(['counter' => $value]);
         return $value;
@@ -119,6 +120,7 @@ class Setting extends Model
 
     public static function decr(string $key): int
     {
+        self::init();
         $value = self::getSwooleTable()->decr($key, 'counter');
         self::where('key', $key)->update(['counter' => $value]);
         return $value;
