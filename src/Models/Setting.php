@@ -47,18 +47,26 @@ class Setting extends Model
         }
     }
 
-    public static function set(string $key, $value = null): void
+    public static function set(string $key, $value, $type = null): void
     {
         self::init();
-        if (is_array($value)) $value = json_encode($value);
+        if (is_array($value))
+            $value = json_encode($value);
+        if (is_null($type)) {
+            $type = 'string';
+            if (filter_var($value, FILTER_VALIDATE_INT)) {
+                $type = 'int';
+            }
+        }
+        $fields = ['value' => $type == 'string' ? $value : '-', 'counter' => $type == 'int' ? $value : 0, 'type' => $type];
         self::updateOrCreate(
             ['key' => $key],
-            ['value' => $value]
+            $fields
         );
         if (self::getDriver() == 'redis') {
             Redis::set($key, $value);
         } elseif (self::getDriver() == 'swoole') {
-            self::getSwooleTable()->set($key, ['key' => $key, 'value' => $value]);
+            self::getSwooleTable()->set($key, $fields);
         }
     }
 
@@ -100,5 +108,19 @@ class Setting extends Model
     public static function exists(string $key): bool
     {
         return (bool)self::where('key', $key)->count();
+    }
+
+    public static function incr(string $key): int
+    {
+        $value = self::getSwooleTable()->incr($key, 'counter');
+        self::where('key', $key)->update(['counter' => $value]);
+        return $value;
+    }
+
+    public static function decr(string $key): int
+    {
+        $value = self::getSwooleTable()->decr($key, 'counter');
+        self::where('key', $key)->update(['counter' => $value]);
+        return $value;
     }
 }
