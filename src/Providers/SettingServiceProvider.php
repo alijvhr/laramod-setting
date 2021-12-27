@@ -2,9 +2,8 @@
 
 namespace Sparrow\Setting\Providers;
 
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
-use Sparrow\Setting\Models\Setting;
+use Swoole\Table;
 
 class SettingServiceProvider extends ServiceProvider
 {
