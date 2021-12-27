@@ -29,15 +29,15 @@ class Setting extends Model
 
     private static function init(): void
     {
+        $setting = self::first();
         if (self::getDriver() == 'swoole') {
-            if (empty(self::$swooleTable)) {
+            if (empty(self::getSwooleTable()->get($setting->key))) {
                 $settings = self::all();
                 $table    = self::getSwooleTable();
                 foreach ($settings as $item)
                     $table->set($item->key, ['value' => $item->value]);
             }
         } elseif (self::getDriver() == 'redis') {
-            $setting = self::first();
             if (Redis::exists($setting->key))
                 return;
             $settings = self::all();
