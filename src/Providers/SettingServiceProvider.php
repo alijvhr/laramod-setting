@@ -16,5 +16,6 @@ class SettingServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../resources/views' => resource_path('views/sparrow/support')
         ]);
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'setting');
     }
 }
