@@ -32,7 +32,7 @@ class Setting extends Model
         if (self::getDriver() == 'swoole') {
             if (empty(self::$swooleTable)) {
                 $settings = self::all();
-                $table = self::getSwooleTable();
+                $table    = self::getSwooleTable();
                 foreach ($settings as $item)
                     $table->set($item->key, ['value' => $item->value]);
             }
@@ -50,19 +50,16 @@ class Setting extends Model
     public static function set(string $key, $value = null): void
     {
         self::init();
-        $setting = self::where('key', $key)->count();
-        if ($setting) return;
         if (is_array($value)) $value = json_encode($value);
-        self::create([
-            'key'   => $key,
-            'value' => $value
-        ]);
+        self::updateOrCreate(
+            ['key' => $key],
+            ['value' => $value]
+        );
         if (self::getDriver() == 'redis') {
             Redis::set($key, $value);
         } elseif (self::getDriver() == 'swoole') {
             self::getSwooleTable()->set($key, ['key' => $key, 'value' => $value]);
         }
-        self::getSwooleTable()->set($key, $value);
     }
 
     public static function get(string $key)
