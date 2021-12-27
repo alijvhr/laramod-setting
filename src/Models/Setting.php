@@ -35,7 +35,7 @@ class Setting extends Model
                 $settings = self::all();
                 $table    = self::getSwooleTable();
                 foreach ($settings as $item)
-                    $table->set($item->key, ['value' => $item->value]);
+                    $table->set($item->key, ['value' => $item->value, 'counter' => $item->counter, 'type' => $item->type]);
             }
         } elseif (self::getDriver() == 'redis') {
             if (Redis::exists($setting->key))
