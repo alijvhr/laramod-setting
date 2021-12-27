@@ -22,31 +22,29 @@ class Setting extends Model
         return self::$swooleTable;
     }
 
-    public static function getDriver() {
+    public static function getDriver()
+    {
         return env('SETTING_DRIVER', 'db');
     }
 
     private static function init(): void
     {
-        if (empty(self::$swooleTable)) {
-            $settings = Setting::all();
-            $table    = Setting::getSwooleTable();
-            foreach ($settings as $item)
-                $table->set($item->key, ['value' => $item->value]);
+        if (self::getDriver() == 'swoole') {
+            if (empty(self::$swooleTable)) {
+                $settings = self::all();
+                $table = self::getSwooleTable();
+                foreach ($settings as $item)
+                    $table->set($item->key, ['value' => $item->value]);
+            }
+        } elseif (self::getDriver() == 'redis') {
+            $setting = self::first();
+            if (Redis::exists($setting->key))
+                return;
+            $settings = self::all();
+            foreach ($settings as $item) {
+                Redis::set($item->key, $item->value);
+            }
         }
-    }
-
-    public static function createRoom(array $data): array
-    {
-        $rows = self::getSwooleTable();
-        $index = 1;
-        foreach ($rows as $key => $item) {
-            $id = explode('_', $key)[1];
-            if ($id > $index)
-                $index = $id;
-        }
-        $table = SwooleTable::get('rooms');
-        $table->set('room_' . $index, ['value' => $data]);
     }
 
     public static function set(string $key, $value = null): void
@@ -55,13 +53,12 @@ class Setting extends Model
         $setting = self::where('key', $key)->count();
         if ($setting) return;
         if (is_array($value)) $value = json_encode($value);
-        Setting::create([
+        self::create([
             'key'   => $key,
             'value' => $value
         ]);
         if (self::getDriver() == 'redis') {
             Redis::set($key, $value);
-            Redis::expire($key, now()->diffInSeconds(now()->addMinutes(env('SETTING_TTL', 1))));
         } elseif (self::getDriver() == 'swoole') {
             self::getSwooleTable()->set($key, ['key' => $key, 'value' => $value]);
         }
@@ -70,9 +67,9 @@ class Setting extends Model
 
     public static function get(string $key)
     {
+        self::init();
         switch (self::getDriver()) {
             case 'swoole':
-                self::init();
                 if (!self::getSwooleTable()->exists($key)) return null;
                 return self::getSwooleTable()->get($key);
             case 'redis':
@@ -83,23 +80,22 @@ class Setting extends Model
                     return Redis::get($key);
                 }
                 return null;
-            case 'db':
-                $setting = self::where('key', $key)->first();
-                if (!$setting)
-                    return null;
-                return $setting->value;
         }
+        $setting = self::where('key', $key)->first();
+        if (!$setting)
+            return null;
+        return $setting->value;
     }
 
     public static function remove(string $key): void
     {
+        self::init();
         self::where('key', $key)->delete();
         $driver = self::getDriver();
         if ($driver == 'swoole') {
             self::init();
             self::getSwooleTable()->del($key);
-        }
-        elseif ($driver == 'redis') {
+        } elseif ($driver == 'redis') {
             Redis::del($key);
         }
     }
