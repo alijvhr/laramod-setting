@@ -70,7 +70,7 @@ class Setting extends Model
         }
     }
 
-    public static function get(string $key)
+    public static function get(string $key, $default = null)
     {
         self::init();
         switch (self::getDriver()) {
@@ -88,7 +88,7 @@ class Setting extends Model
         }
         $setting = self::where('key', $key)->first();
         if (!$setting)
-            return null;
+            return $default;
         return $setting->value;
     }
 
