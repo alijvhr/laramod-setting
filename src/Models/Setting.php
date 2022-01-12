@@ -89,6 +89,8 @@ class Setting extends Model
         $setting = self::where('key', $key)->first();
         if (!$setting)
             return $default;
+        if ($setting->type == 'int')
+            return $setting->counter;
         return $setting->value;
     }
 
