@@ -17,7 +17,7 @@
         "illuminate/support": "*",
         "illuminate/routing": "*",
         "illuminate/contracts": "*",
-        "php": "^8.0",
+        "php": "*",
         "predis/predis": "*"
     },
     "extra": {
