@@ -17,15 +17,15 @@ class SettingController extends Controller
         return view('sparrow-setting::admin.index');
     }
 
-    #[ArrayShape(['status' => "string", 'messages' => "array"])]
     public function set(Request $request): array
     {
         $inputs = $request->except('_token');
         foreach ($inputs as $key => $value)
             Setting::set($key, $value);
         return [
-            'status' => 'OK',
-            'messages' => [__('admin.settings.success')]
+            'status'   => 'OK',
+            'messages' => [__('admin.settings.success')],
+            'reload'   => true
         ];
     }
 }
