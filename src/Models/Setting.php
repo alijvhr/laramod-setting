@@ -9,10 +9,10 @@ use SwooleTW\Http\Table\Facades\SwooleTable;
 
 class Setting extends Model
 {
-    protected            $guarded      = [];
-    protected            $primaryKey   = 'key';
-    public               $incrementing = false;
-    public               $timestamps   = false;
+    protected $guarded = [];
+    protected $primaryKey = 'key';
+    public $incrementing = false;
+    public $timestamps = false;
     private static Table $swooleTable;
 
     public static function getSwooleTable(): Table
@@ -31,9 +31,9 @@ class Setting extends Model
     {
         $setting = self::first();
         if (self::getDriver() == 'swoole') {
-            if ($setting->key && empty(self::getSwooleTable()->get($setting->key))) {
+            if (isset($setting) && empty(self::getSwooleTable()->get($setting->key))) {
                 $settings = self::all();
-                $table    = self::getSwooleTable();
+                $table = self::getSwooleTable();
                 foreach ($settings as $item)
                     $table->set($item->key, ['value' => $item->value, 'counter' => $item->counter, 'type' => $item->type]);
             }
