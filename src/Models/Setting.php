@@ -31,7 +31,7 @@ class Setting extends Model
     {
         $setting = self::first();
         if (self::getDriver() == 'swoole') {
-            if (empty(self::getSwooleTable()->get($setting->key))) {
+            if ($setting->key && empty(self::getSwooleTable()->get($setting->key))) {
                 $settings = self::all();
                 $table    = self::getSwooleTable();
                 foreach ($settings as $item)
