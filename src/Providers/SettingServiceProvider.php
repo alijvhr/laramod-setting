@@ -18,9 +18,9 @@ class SettingServiceProvider extends ServiceProvider
             $tables['settings'] = [
                 'size' => 4096,
                 'columns' => [
-                    ['name' => 'counter', 'type' => \Swoole\Table::TYPE_INT, 'size' => 11],
-                    ['name' => 'value', 'type' => \Swoole\Table::TYPE_STRING, 'size' => 1024],
-                    ['name' => 'type', 'type' => \Swoole\Table::TYPE_STRING, 'size' => 1024]
+                    ['name' => 'counter', 'type' => 'int', 'size' => 11],
+                    ['name' => 'value', 'type' => 'string', 'size' => 1024],
+                    ['name' => 'type', 'type' => 'string', 'size' => 1024]
                 ]
             ];
             config(['swoole_http.tables' => $tables]);
