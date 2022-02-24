@@ -7,12 +7,6 @@ use Sparrow\Setting\Models\Setting;
 
 class DatabaseDriver implements SettingDriverProvider
 {
-
-    public function init(): void
-    {
-        //
-    }
-
     public function get(string $key, $default = null)
     {
         $setting = Setting::query()->where('key', $key)->first();

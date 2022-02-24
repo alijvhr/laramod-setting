@@ -8,6 +8,17 @@ use Sparrow\Setting\Models\Setting;
 
 class RedisDriver implements SettingDriverProvider
 {
+    public function __construct()
+    {
+        $setting = Setting::query()->first();
+        if (Redis::exists($setting->key))
+            return;
+        $settings = Setting::all();
+        foreach ($settings as $item) {
+            Redis::set($item->key, $item->value);
+        }
+    }
+
     public function get(string $key, $default = null)
     {
         self::init();
@@ -18,17 +29,6 @@ class RedisDriver implements SettingDriverProvider
             return Redis::get($key);
         }
         return $default;
-    }
-
-    public function init(): void
-    {
-        $setting = Setting::query()->first();
-        if (Redis::exists($setting->key))
-            return;
-        $settings = Setting::all();
-        foreach ($settings as $item) {
-            Redis::set($item->key, $item->value);
-        }
     }
 
     public function set(string $key, $value, $type = null): void

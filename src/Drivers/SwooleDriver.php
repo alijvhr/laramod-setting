@@ -11,15 +11,18 @@ class SwooleDriver implements SettingDriverProvider
 {
     private static Table $swooleTable;
 
-    public static function getSwooleTable(): Table
+    public function __construct()
     {
-        if (isset(self::$swooleTable)) return self::$swooleTable;
-        self::$swooleTable = SwooleTable::get('settings');
-        return self::$swooleTable;
-    }
-
-    public function init(): void
-    {
+        $tables = config('swoole_http.tables');
+        $tables['settings'] = [
+            'size' => 4096,
+            'columns' => [
+                ['name' => 'counter', 'type' => 'int', 'size' => 11],
+                ['name' => 'value', 'type' => 'string', 'size' => 1024],
+                ['name' => 'type', 'type' => 'string', 'size' => 1024]
+            ]
+        ];
+        config(['swoole_http.tables' => $tables]);
         $setting = Setting::query()->first();
         if (isset($setting) && empty(self::getSwooleTable()->get($setting->key))) {
             $settings = Setting::all();
@@ -30,9 +33,15 @@ class SwooleDriver implements SettingDriverProvider
         }
     }
 
+    public static function getSwooleTable(): Table
+    {
+        if (isset(self::$swooleTable)) return self::$swooleTable;
+        self::$swooleTable = SwooleTable::get('settings');
+        return self::$swooleTable;
+    }
+
     public function get(string $key, $default = null)
     {
-        self::init();
         if (!self::getSwooleTable()->exists($key)) {
             return $default;
         }
@@ -42,7 +51,6 @@ class SwooleDriver implements SettingDriverProvider
 
     public function set(string $key, $value, $type = null): void
     {
-        self::init();
         if (is_array($value))
             $value = json_encode($value);
         if (is_null($type)) {
@@ -65,14 +73,12 @@ class SwooleDriver implements SettingDriverProvider
 
     public function remove(string $key): void
     {
-        self::init();
         Setting::query()->where('key', $key)->delete();
         self::getSwooleTable()->del($key);
     }
 
     public function incr(string $key): int
     {
-        self::init();
         $value = self::getSwooleTable()->incr($key, 'counter');
         Setting::query()->where('key', $key)->update(['counter' => $value]);
         return $value;
@@ -80,7 +86,6 @@ class SwooleDriver implements SettingDriverProvider
 
     public function decr(string $key): int
     {
-        self::init();
         $value = self::getSwooleTable()->decr($key, 'counter');
         Setting::query()->where('key', $key)->update(['counter' => $value]);
         return $value;

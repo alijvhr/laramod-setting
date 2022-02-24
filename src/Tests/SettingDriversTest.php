@@ -9,34 +9,30 @@ class SettingDriversTest extends TestCase
 {
     public function test_can_set_key()
     {
-        $driver = Setting::getDriver();
-        $driver->set('test', 'test');
-        $this->assertEquals('test', $driver->get('test'));
+        Setting::set('test', 'test');
+        $this->assertEquals('test', Setting::get('test'));
     }
 
     public function test_can_remove_key()
     {
-        $driver = Setting::getDriver();
-        $this->assertTrue($driver->exists('test'));
-        $driver->remove('test');
-        $this->assertFalse($driver->exists('test'));
+        $this->assertTrue(Setting::exists('test'));
+        Setting::remove('test');
+        $this->assertFalse(Setting::exists('test'));
     }
 
     public function test_can_increment_key()
     {
-        $driver = Setting::getDriver();
-        $driver->set('test', 0);
-        $driver->incr('test');
-        $this->assertEquals(1, $driver->get('test'));
-        $driver->remove('test');
+        Setting::set('test', 0);
+        Setting::incr('test');
+        $this->assertEquals(1, Setting::get('test'));
+        Setting::remove('test');
     }
 
     public function test_can_decrement_key()
     {
-        $driver = Setting::getDriver();
-        $driver->set('test', 1);
-        $driver->decr('test');
-        $this->assertEquals(0, $driver->get('test'));
-        $driver->remove('test');
+        Setting::set('test', 1);
+        Setting::decr('test');
+        $this->assertEquals(0, Setting::get('test'));
+        Setting::remove('test');
     }
 }
