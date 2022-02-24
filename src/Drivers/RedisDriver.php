@@ -38,7 +38,7 @@ class RedisDriver implements SettingDriverProvider
             $value = json_encode($value);
         if (is_null($type)) {
             $type = 'string';
-            if (filter_var($value, FILTER_VALIDATE_INT)) {
+            if (filter_var($value, FILTER_VALIDATE_INT) !== false) {
                 $type = 'int';
             }
         }
