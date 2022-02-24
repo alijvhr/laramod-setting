@@ -3,6 +3,7 @@
 namespace Sparrow\Setting\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Sparrow\Setting\Interfaces\SettingDriverProvider;
 
 class Setting extends Model
 {
@@ -11,8 +12,8 @@ class Setting extends Model
     public $incrementing = false;
     public $timestamps = false;
 
-    public static function getDriver()
+    public static function getDriver(string $key = null): SettingDriverProvider
     {
-        return app()->make(env('SETTING_DRIVER', 'setting.redis'));
+        return app()->make($key ?? env('SETTING_DRIVER', 'setting.redis'));
     }
 }
