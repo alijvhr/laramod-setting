@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Sparrow\Setting\Drivers\DatabaseDriver;
 use Sparrow\Setting\Drivers\RedisDriver;
 use Sparrow\Setting\Drivers\SwooleDriver;
+use Sparrow\Setting\Interfaces\SettingDriverProvider;
 
 class SettingServiceProvider extends ServiceProvider
 {
@@ -20,8 +21,17 @@ class SettingServiceProvider extends ServiceProvider
 
     public function register()
     {
-        $this->app->singleton('setting.redis', fn($app) => new RedisDriver());
-        $this->app->singleton('setting.swoole', fn($app) => new SwooleDriver());
-        $this->app->singleton('setting.db', fn($app) => new DatabaseDriver());
+        $this->app->singleton(SettingDriverProvider::class, function ($app) {
+            switch ($app->make('config')->get('setting.driver')) {
+                case 'redis':
+                    return new RedisDriver();
+                case 'db':
+                    return new DatabaseDriver();
+                case 'swoole':
+                    return new SwooleDriver();
+                default:
+                    throw new \RuntimeException('Unknown setting driver used!');
+            }
+        });
     }
 }
