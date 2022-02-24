@@ -3,6 +3,9 @@
 namespace Sparrow\Setting\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Sparrow\Setting\Drivers\DatabaseDriver;
+use Sparrow\Setting\Drivers\RedisDriver;
+use Sparrow\Setting\Drivers\SwooleDriver;
 
 class SettingServiceProvider extends ServiceProvider
 {
@@ -25,5 +28,12 @@ class SettingServiceProvider extends ServiceProvider
             ];
             config(['swoole_http.tables' => $tables]);
         }
+    }
+
+    public function register()
+    {
+        $this->app->bind('setting.redis', fn($app) => new RedisDriver());
+        $this->app->bind('setting.swoole', fn($app) => new SwooleDriver());
+        $this->app->bind('setting.db', fn($app) => new DatabaseDriver());
     }
 }
